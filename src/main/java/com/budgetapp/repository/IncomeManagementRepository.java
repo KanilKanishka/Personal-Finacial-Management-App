@@ -13,4 +13,12 @@ public interface IncomeManagementRepository extends JpaRepository<IncomeManageme
 
     @Query("SELECT incomeManagement FROM IncomeManagement incomeManagement WHERE incomeManagement.date >= :fromDate AND incomeManagement.date <= :toDate")
     List<IncomeManagement> findByDateRange(@Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
+    @Query("SELECT SUM(incomeManagement.amount) FROM IncomeManagement incomeManagement")
+    Double getTotalIncome();
+
+
+    @Query("SELECT SUM(incomeManagement.amount) FROM IncomeManagement incomeManagement WHERE incomeManagement.date >= :fromDate AND incomeManagement.date <= :toDate")
+    Double totalIncomeByDateRange(@Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
 }

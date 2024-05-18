@@ -11,6 +11,5 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class CategoryRequest {
-    private Long id;
     private String name;
 }

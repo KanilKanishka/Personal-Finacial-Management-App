@@ -1,7 +1,7 @@
 package com.budgetapp.mapper;
 
-import com.budgetapp.entity.UserInfo;
 import com.budgetapp.dto.UserRegistrationDto;
+import com.budgetapp.entity.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,6 @@ public class UserInfoMapper {
         userInfo.setUserName(userRegistrationDto.userName());
         userInfo.setEmailId(userRegistrationDto.userEmail());
         userInfo.setMobileNumber(userRegistrationDto.userMobileNo());
-        userInfo.setRoles(userRegistrationDto.userRole());
         userInfo.setPassword(passwordEncoder.encode(userRegistrationDto.userPassword()));
         return userInfo;
     }

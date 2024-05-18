@@ -1,6 +1,5 @@
 package com.budgetapp.request;
 
-import com.budgetapp.entity.Category;
 import lombok.*;
 
 
@@ -13,7 +12,7 @@ import lombok.*;
 public class IncomeManagementRequest {
     private String date;
     private Double amount;
-    private Category category;
+    private Long categoryId;
     private String note;
     private String description;
 }

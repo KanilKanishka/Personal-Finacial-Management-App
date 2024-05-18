@@ -10,7 +10,6 @@ import lombok.*;
 @EqualsAndHashCode
 @ToString
 public class IncomeManagementResponse {
-    private Long id;
     private String date;
     private Double amount;
     private Category category;

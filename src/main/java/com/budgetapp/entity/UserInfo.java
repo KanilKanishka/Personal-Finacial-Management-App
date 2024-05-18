@@ -27,9 +27,6 @@ public class UserInfo {
     @Column(name = "mobile_number")
     private String mobileNumber;
 
-    @Column(nullable = false, name = "roles")
-    private String roles;
-
     @Column(nullable = false, name = "password")
     private String password;
 

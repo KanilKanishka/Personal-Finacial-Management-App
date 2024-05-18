@@ -1,14 +1,13 @@
 package com.budgetapp.controller;
 
 
-import com.budgetapp.entity.ExpensesManagement;
 import com.budgetapp.request.ExpensesManagementRequest;
 import com.budgetapp.service.ExpensesManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -19,36 +18,107 @@ public class ExpensesManagementController {
     private final ExpensesManagementService expensesManagementService;
 
     @PostMapping("/add")
-    public String addExpense(@RequestBody ExpensesManagementRequest expensesManagementRequest) {
-        return expensesManagementService.addExpense(expensesManagementRequest);
+    public Map<String, Object> addExpense(@RequestBody ExpensesManagementRequest expensesManagementRequest) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            expensesManagementService.addExpense(expensesManagementRequest);
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", "ADD_EXPENSE_SUCCESS");
+            return response;
+        }catch (Exception e){
+            e.printStackTrace();
+            response.put("STATUS", "FAILED");
+            response.put("DATA", "ADD_EXPENSE_FAILED");
+            return response;
+        }
     }
 
     @GetMapping("/findById")
-    public Optional<ExpensesManagement> findExpenseById(@RequestParam("expenseId") Long expenseId){
-        return expensesManagementService.findExpenseById(expenseId);
+    public Map<String, Object> findExpenseById(@RequestParam("expenseId") Long expenseId){
+
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            expensesManagementService.findExpenseById(expenseId);
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", expensesManagementService.findExpenseById(expenseId));
+            return response;
+        }catch (Exception e){
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", "NOT_FOUND_DATA");
+            return response;
+        }
     }
 
     @GetMapping("/findByDateRange")
-    public List<ExpensesManagement> findByDateRange(@RequestParam("fromDate") String fromDate,
+    public Map<String, Object> findByDateRange(@RequestParam("fromDate") String fromDate,
                                                         @RequestParam("toDate") String toDate){
-        return expensesManagementService.findByDateRange(fromDate, toDate);
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (!expensesManagementService.findByDateRange(fromDate, toDate).isEmpty()){
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", expensesManagementService.findByDateRange(fromDate, toDate));
+            response.put("TOTAL_EXPENSES_AMOUNT", expensesManagementService.totalExpensesByDateRange(fromDate, toDate));
+            return response;
+        }else {
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", "NOT_FOUND_DATA");
+            return response;
+        }
     }
 
     @GetMapping("/findAll")
-    public List<ExpensesManagement> findAllExpense(){
-        return expensesManagementService.findAllExpense();
+    public Map<String, Object> findAllExpense(){
+        Map<String, Object> response = new HashMap<>();
+
+        if (!expensesManagementService.findAllExpense().isEmpty()){
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", expensesManagementService.findAllExpense());
+            response.put("TOTAL_EXPENSES_AMOUNT", expensesManagementService.getTotalExpense());
+            return response;
+        }else {
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", "NOT_FOUND_DATA");
+            return response;
+        }
     }
 
     @PutMapping("/update")
-    public ExpensesManagement updateExpenseById(
+    public Map<String, Object> updateExpenseById(
             @RequestParam("expenseId") Long expenseId,
             @RequestBody ExpensesManagementRequest expensesManagementRequest){
-        return expensesManagementService.updateExpensesById(expenseId, expensesManagementRequest);
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            expensesManagementService.updateExpensesById(expenseId, expensesManagementRequest);
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", expensesManagementService.updateExpensesById(expenseId, expensesManagementRequest));
+            return response;
+        }catch (Exception e){
+            e.printStackTrace();
+            response.put("STATUS", "FAILED");
+            response.put("DATA", "UPDATE_FAILED");
+            return response;
+        }
     }
 
     @DeleteMapping("/delete")
-    public String deleteExpenseById(@RequestParam("expenseId") Long expenseId){
-        expensesManagementService.deleteExpenseById(expenseId);
-        return "Delete successfully";
+    public Map<String, Object> deleteExpenseById(@RequestParam("expenseId") Long expenseId){
+        Map<String, Object> response = new HashMap<>();
+
+        try{
+            expensesManagementService.deleteExpenseById(expenseId);
+            response.put("STATUS", "SUCCESS");
+            response.put("DATA", "DELETE_SUCCESS");
+            return response;
+        }catch (Exception e){
+            e.printStackTrace();
+            response.put("STATUS", "FAILED");
+            response.put("DATA", "DELETE_FAILED");
+            return response;
+        }
     }
 }

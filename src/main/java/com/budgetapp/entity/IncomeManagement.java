@@ -1,11 +1,11 @@
 package com.budgetapp.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.*;
 import jakarta.persistence.*;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 
 
 @Data
@@ -18,11 +18,12 @@ public class IncomeManagement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "income_id")
     private Long id;
-    @UpdateTimestamp
     private String date;
     private Double amount;
-    @OneToOne(cascade = CascadeType.ALL)
-    private Category categories;
+    @ManyToOne
+    @JoinColumn(unique = false)
+    private Category category;
     private String note;
     private String description;
+    private Double statsPercentage;
 }

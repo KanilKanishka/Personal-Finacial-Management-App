@@ -1,7 +1,7 @@
 package com.budgetapp.service;
 
-import com.budgetapp.repository.CategoryRepository;
 import com.budgetapp.entity.Category;
+import com.budgetapp.repository.CategoryRepository;
 import com.budgetapp.request.CategoryRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class CategoryService {
 
     public void addCategory(CategoryRequest categoryRequest){
         Category category = new Category();
-        category.setName(category.getName());
+        category.setName(categoryRequest.getName());
 
         try{
             categoryRepository.save(category);
@@ -41,12 +41,12 @@ public class CategoryService {
         return Optional.empty();
     }
 
-    public void updateCategoryById(Long categoryId, CategoryRequest categoryRequest) throws EntityNotFoundException {
+    public Category updateCategoryById(Long categoryId, CategoryRequest categoryRequest) throws EntityNotFoundException {
         Category category = findCategoryById(categoryId).orElseThrow(() ->
                 new EntityNotFoundException("Entity not found."));
 
         category.setName(categoryRequest.getClass().getName());
-        categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
     public void deleteByCategoryId(Long categoryId){

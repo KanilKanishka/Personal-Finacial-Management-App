@@ -4,16 +4,14 @@ package com.budgetapp.response;
 import com.budgetapp.entity.Category;
 import lombok.*;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class ExpensesManagementResponse {
-    private String description;
+public class ExpenseStatsResponse {
     private Double amount;
-    private Category category;
-    private String note;
+    private Category categories;
+    private Double statsPercentage;
     private String date;
 }

@@ -13,8 +13,13 @@ import java.util.Optional;
 @Repository
 public interface ExpensesManagementRepository extends JpaRepository<ExpensesManagement, Long> {
     Optional<ExpensesManagement> findById(Long id);
-    void deleteById(Long id);
 
     @Query("SELECT expensesManagement FROM ExpensesManagement expensesManagement WHERE expensesManagement.date >= :fromDate AND expensesManagement.date <= :toDate")
     List<ExpensesManagement> findByDateRange(@Param("fromDate") String fromDate, @Param("toDate") String toDate);
+
+    @Query("SELECT SUM(expensesManagement.amount) FROM ExpensesManagement expensesManagement")
+    Double getTotalExpense();
+
+    @Query("SELECT SUM(expensesManagement.amount) FROM ExpensesManagement expensesManagement WHERE expensesManagement.date >= :fromDate AND expensesManagement.date <= :toDate")
+    Double totalExpensesByDateRange(@Param("fromDate") String fromDate, @Param("toDate") String toDate);
 }

@@ -1,15 +1,18 @@
 package com.budgetapp.service;
 
-import com.budgetapp.repository.ExpensesManagementRepository;
 import com.budgetapp.entity.Category;
 import com.budgetapp.entity.ExpensesManagement;
+import com.budgetapp.exception.ResourceNotFoundException;
+import com.budgetapp.repository.ExpensesManagementRepository;
 import com.budgetapp.request.ExpensesManagementRequest;
-import jakarta.persistence.EntityNotFoundException;
+import com.budgetapp.response.ExpenseStatsResponse;
+import com.budgetapp.response.ExpensesManagementResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,54 +21,110 @@ public class ExpensesManagementService {
     private final ExpensesManagementRepository expensesManagementRepository;
     private final CategoryService categoryService;
 
-    public String addExpense(ExpensesManagementRequest expensesManagementRequest){
-        Optional<Category> category = categoryService.findCategoryById(expensesManagementRequest.getCategoryId());
+    private Double totalIncome;
+
+    private void initializeTotalIncome() {
+        this.totalIncome = Optional.ofNullable(getTotalExpense()).orElse(0.0);
+    }
+
+    public void addExpense(ExpensesManagementRequest expensesManagementRequest) {
+        Category category = categoryService.findCategoryById(expensesManagementRequest.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found for this id :: " + expensesManagementRequest.getCategoryId()));
 
         ExpensesManagement expensesManagement = new ExpensesManagement();
-        expensesManagement.setCategories(category.get());
+        expensesManagement.setAmount(expensesManagementRequest.getAmount());
+        expensesManagement.setCategory(category);
         expensesManagement.setDate(expensesManagementRequest.getDate());
+        expensesManagement.setNote(expensesManagementRequest.getNote());
         expensesManagement.setDescription(expensesManagementRequest.getDescription());
 
-        try{
+        try {
             expensesManagementRepository.save(expensesManagement);
-            return "Add expenses successfully";
-        }catch (Exception e){
+            initializeTotalIncome();
+            updateStatsPercentage();
+        } catch (Exception e) {
             e.printStackTrace();
-            return "Add expenses not successfully";
+            throw new RuntimeException("Error adding expense: " + e.getMessage());
         }
     }
 
-    public Optional<ExpensesManagement> findExpenseById(Long expenseId){
-        boolean isPresent = expensesManagementRepository.findById(expenseId).isPresent();
-        if (isPresent){
-            return expensesManagementRepository.findById(expenseId);
+    private void updateStatsPercentage() {
+        List<ExpensesManagement> allExpensesManagement = expensesManagementRepository.findAll();
+        for (ExpensesManagement oneExpensesManagement : allExpensesManagement) {
+            final Double statsPercentage = (oneExpensesManagement.getAmount() / this.totalIncome) * 100;
+            oneExpensesManagement.setStatsPercentage(statsPercentage);
+            expensesManagementRepository.save(oneExpensesManagement);
         }
-        return Optional.empty();
     }
 
-    public List<ExpensesManagement> findByDateRange(String fromDate, String toDate){
-        return expensesManagementRepository.findByDateRange(fromDate, toDate);
+    public ExpensesManagementResponse findExpenseById(Long expenseId) {
+        ExpensesManagement expensesManagement = expensesManagementRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found for this id :: " + expenseId));
+        return mapToResponse(expensesManagement);
     }
 
-    public List<ExpensesManagement> findAllExpense(){
-        return expensesManagementRepository.findAll();
+    public List<ExpensesManagementResponse> findByDateRange(String fromDate, String toDate) {
+        List<ExpensesManagement> expensesManagementList = expensesManagementRepository.findByDateRange(fromDate, toDate);
+        return expensesManagementList.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    public ExpensesManagement updateExpensesById(Long expenseId,
-                                                  ExpensesManagementRequest expensesManagementRequest){
+    public List<ExpenseStatsResponse> expenseStatsFindByDateRange(String fromDate, String toDate) {
+        List<ExpensesManagement> expensesManagementList = expensesManagementRepository.findByDateRange(fromDate, toDate);
+        return expensesManagementList.stream().map(this::mapToExpenseStatsResponse).collect(Collectors.toList());
+    }
 
-        ExpensesManagement expensesManagement = findExpenseById(expenseId)
-                .orElseThrow(() -> new EntityNotFoundException("Entity not found"));
+    public List<ExpensesManagementResponse> findAllExpense() {
+        List<ExpensesManagement> expensesManagementList = expensesManagementRepository.findAll();
+        return expensesManagementList.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
-        Optional<Category> category = categoryService.findCategoryById(expensesManagementRequest.getCategoryId());
+    public Double totalExpensesByDateRange(String fromDate, String toDate){
+        return expensesManagementRepository.totalExpensesByDateRange(fromDate, toDate);
+    }
+
+    public ExpensesManagementResponse updateExpensesById(Long expenseId, ExpensesManagementRequest expensesManagementRequest) {
+        ExpensesManagement expensesManagement = expensesManagementRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found for this id :: " + expenseId));
+
+        Category category = categoryService.findCategoryById(expensesManagementRequest.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found for this id :: " + expensesManagementRequest.getCategoryId()));
 
         expensesManagement.setDescription(expensesManagementRequest.getDescription());
         expensesManagement.setDate(expensesManagementRequest.getDate());
-        expensesManagement.setCategories(category.get());
-        return expensesManagementRepository.save(expensesManagement);
+        expensesManagement.setCategory(category);
+        expensesManagement.setAmount(expensesManagementRequest.getAmount());
+
+        ExpensesManagement updatedExpense = expensesManagementRepository.save(expensesManagement);
+        return mapToResponse(updatedExpense);
     }
 
-    public void deleteExpenseById(Long expenseId){
+    public void deleteExpenseById(Long expenseId) {
+        ExpensesManagementResponse expensesManagementResponse = findExpenseById(expenseId);
         expensesManagementRepository.deleteById(expenseId);
+    }
+
+    public Double getTotalExpense() {
+        return expensesManagementRepository.getTotalExpense();
+    }
+
+    private ExpensesManagementResponse mapToResponse(ExpensesManagement expensesManagement) {
+        return new ExpensesManagementResponse(
+                expensesManagement.getDescription(),
+                expensesManagement.getAmount(),
+                expensesManagement.getCategory(),
+                expensesManagement.getNote(),
+                expensesManagement.getDate()
+        );
+    }
+
+    private ExpenseStatsResponse mapToExpenseStatsResponse(ExpensesManagement expensesManagement) {
+        return new ExpenseStatsResponse(
+                expensesManagement.getAmount(),
+                expensesManagement.getCategory(),
+                expensesManagement.getStatsPercentage(),
+                expensesManagement.getDate()
+        );
     }
 }

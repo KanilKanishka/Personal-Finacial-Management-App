@@ -16,10 +16,6 @@ public class UserInfoManagerConfig implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String emailId) {
-        System.out.println(emailId);
-
-        boolean isEmail = userInfoRepository.findByEmailId(emailId).isPresent();
-        System.out.println(isEmail);
 
         return userInfoRepository
                 .findByEmailId(emailId)

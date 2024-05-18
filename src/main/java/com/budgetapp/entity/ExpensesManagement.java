@@ -1,9 +1,10 @@
 package com.budgetapp.entity;
 
 
-
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -13,10 +14,13 @@ import jakarta.persistence.*;
 public class ExpensesManagement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Column(name = "e")
     private Long id;
     private String description;
+    private Double amount;
+    private String note;
     private String date;
-    @OneToOne(cascade = CascadeType.ALL)
-    private Category categories;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(unique = false)
+    private Category category;
+    private Double statsPercentage;
 }

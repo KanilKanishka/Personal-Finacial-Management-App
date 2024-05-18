@@ -3,10 +3,8 @@ package com.budgetapp.config.user;
 import com.budgetapp.entity.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 
@@ -16,12 +14,7 @@ public class UserInfoConfig implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays
-                .stream(userInfo
-                        .getRoles()
-                        .split(","))
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        return null;
     }
 
     @Override

@@ -2,25 +2,23 @@ package com.budgetapp.service;
 
 
 import com.budgetapp.config.jwtAuth.JwtTokenGenerator;
-import com.budgetapp.entity.UserInfo;
-import com.budgetapp.mapper.UserInfoMapper;
-import com.budgetapp.repository.RefreshTokenRepository;
-import com.budgetapp.repository.UserInfoRepository;
 import com.budgetapp.dto.AuthResponseDto;
 import com.budgetapp.dto.TokenType;
 import com.budgetapp.dto.UserRegistrationDto;
 import com.budgetapp.entity.RefreshToken;
+import com.budgetapp.entity.UserInfo;
+import com.budgetapp.mapper.UserInfoMapper;
+import com.budgetapp.repository.RefreshTokenRepository;
+import com.budgetapp.repository.UserInfoRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -109,14 +107,8 @@ public class AuthService {
     private static Authentication createAuthenticationObject(UserInfo userInfo) {
         String username = userInfo.getEmailId();
         String password = userInfo.getPassword();
-        String roles = userInfo.getRoles();
 
-        String[] roleArray = roles.split(",");
-        GrantedAuthority[] authorities = Arrays.stream(roleArray)
-                .map(role -> (GrantedAuthority) role::trim)
-                .toArray(GrantedAuthority[]::new);
-
-        return new UsernamePasswordAuthenticationToken(username, password, Arrays.asList(authorities));
+        return new UsernamePasswordAuthenticationToken(username, password);
     }
 
     public Map<String, Object> registerUser(UserRegistrationDto userRegistrationDto,
